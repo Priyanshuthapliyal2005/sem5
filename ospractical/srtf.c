@@ -2,20 +2,24 @@
 #include <stdbool.h>
 #include <limits.h>
 
-struct Process {
-    int pid;    // Process ID
-    int at;     // Arrival Time
-    int bt;     // Burst Time
-    int st;     // Start Time
-    int ct;     // Completion Time
-    int rt;     // Response Time
-    int wt;     // Waiting Time
-    int tat;    // Turnaround Time
-} ps[100];     // Array to store processes
+struct Process
+{
+    int pid;  // Process ID
+    int at;   // Arrival Time
+    int bt;   // Burst Time
+    int ct;   // Completion Time
+    int st;   // Start Time
+    float tat; // Turnaround Time
+    float rt;  // Response Time
+    float wt;  // Waiting Time
+    int rmbt;
+} ;
+typedef struct Process ps;
 
-int executionOrder[1000]; // Array to track execution order (up to 1000 time units)
-int executionIndex = 0;   // Index to track the current execution in the Gantt chart
+int executionOrder[100]; // Array to store the execution order
+int orderIndex = 0;      // Index to track execution order
 
+// Utility functions to find max and min
 int findMax(int a, int b) {
     return a > b ? a : b;
 }
@@ -26,95 +30,92 @@ int findMin(int a, int b) {
 
 int main() {
     int n;
-    float btRem[100]; // Remaining Burst Time
-    bool isCompleted[100] = {false}; // Track whether a process is completed
-    int currTime = 0;  // Current time
-    int completed = 0; // Number of processes completed
-    int prev = 0;      // Previous process time (for tracking idle time)
-    bool isFirstProcess = true;
 
-    printf("Enter the total number of processes: ");
-    scanf("%d", &n);
+    printf("Enter total number of processes: ");
+    scanf("%d", &n);     // Input the number of processes
+    
+    ps p[n];
 
-    printf("\nEnter the arrival time of %d processes: ", n);
+    // Input arrival time
     for (int i = 0; i < n; i++) {
-        scanf("%d", &ps[i].at);
-        ps[i].pid = i + 1; // Assign Process ID (starting from 1)
+        printf("\nEnter Process %d Arrival Time  and bt : ", i + 1);
+        scanf("%d", &p[i].at);
+        scanf("%d", &p[i].bt);
+        p[i].pid = i + 1;  // Assigning Process ID
+        p[i].rmbt = p[i].bt;
     }
-
-    printf("\nEnter the burst time of %d processes: ", n);
-    for (int i = 0; i < n; i++) {
-        scanf("%d", &ps[i].bt);
-        btRem[i] = ps[i].bt; // Initialize remaining burst time
+    
+    
+    int currT = 0;       // Current time
+    int completed = 0;   // Count of completed processes
+    
+    int isCompleted[n];
+    for(int i=0; i< n ;i++){
+        isCompleted[i]=0;
     }
-
-    // Main scheduling loop
-    while (completed != n) {
-        int minIndex = -1;
-        int minimum = INT_MAX;
-
-        // Find the process with the minimum remaining burst time
-        for (int i = 0; i < n; i++) {
-            if (ps[i].at <= currTime && isCompleted[i] == false) {
-                if (btRem[i] < minimum) {
-                    minIndex = i;
-                    minimum = btRem[i];
+    
+    
+    while(completed < n){
+        int idx =-1;
+        int minBt = INT_MAX;
+        
+        for(int i=0 ; i< n ; i++){
+            if(p[i].at <= currT && !isCompleted[i]){
+                if(p[i].rmbt < minBt){
+                    idx = i;
+                    minBt= p[i].rmbt;
                 }
-                // If burst times are equal, choose the one with the earlier arrival time
-                if (btRem[i] == minimum) {
-                    if (ps[i].at < ps[minIndex].at) {
-                        minIndex = i;
+                else if(p[i].rmbt == p[idx].bt){
+                    if(p[i].at < p[idx].at){
+                        idx =i;
                     }
                 }
             }
         }
-
-        // If no process is ready, increment the current time
-        if (minIndex == -1) {
-            currTime++;
-        } else {
-            // First time scheduling this process
-            if (btRem[minIndex] == ps[minIndex].bt) {
-                ps[minIndex].st = currTime; // Start time of the process
-                ps[minIndex].rt = ps[minIndex].st - ps[minIndex].at; // Response time
+        
+        if(idx == -1){
+            currT++;
+        }
+        else{
+            if(p[idx].rmbt == p[idx].bt){
+                p[idx].st = currT;
             }
+            
+            p[idx]. rmbt --;
+            currT++;
 
-            btRem[minIndex] -= 1; // Decrease remaining burst time by 1
-            currTime++;           // Increment current time
-
-            // Record the execution for Gantt chart
-            executionOrder[executionIndex++] = ps[minIndex].pid;
-
-            // Process has finished execution
-            if (btRem[minIndex] == 0) {
-                ps[minIndex].ct = currTime; // Completion time
-                ps[minIndex].tat = ps[minIndex].ct - ps[minIndex].at; // Turnaround time
-                ps[minIndex].wt = ps[minIndex].tat - ps[minIndex].bt; // Waiting time
-                isCompleted[minIndex] = true; // Mark process as completed
-                completed++; // Increment the number of completed processes
+            executionOrder[orderIndex++]=p[idx].pid;
+            
+            if(p[idx].rmbt==0){
+                completed++;
+                isCompleted[idx]=1;
+                
+                p[idx].ct = currT;
+                p[idx].tat = p[idx].ct - p[idx].at;
+                p[idx].rt = p[idx].st - p[idx].at;
+                p[idx].wt = p[idx].tat - p[idx].bt;
+                
             }
+            
+
         }
     }
-
-    // Calculate and print the results
-    float sumTat = 0, sumWt = 0;
-    printf("\nProcess\tAT\tBT\tST\tCT\tTAT\tWT\tRT\n");
+     printf("\nProcess No.\tAT\tBT\tCT\tTAT\tWT\tRT\n");
     for (int i = 0; i < n; i++) {
-        printf("P%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", ps[i].pid, ps[i].at, ps[i].bt, ps[i].st, ps[i].ct, ps[i].tat, ps[i].wt, ps[i].rt);
-        sumTat += ps[i].tat;
-        sumWt += ps[i].wt;
+        printf("%d\t\t%d\t%d\t%d\t%.2f\t%.2f\t%.2f\n", p[i].pid, p[i].at, p[i].bt, p[i].ct, p[i].tat, p[i].wt, p[i].rt);
     }
 
-    // Print average times
-    printf("\nAverage Turnaround Time: %.2f", sumTat / n);
-    printf("\nAverage Waiting Time: %.2f", sumWt / n);
-
-    // Print Gantt Chart
-    printf("\nGantt Chart: ");
-    for (int i = 0; i < executionIndex; i++) {
+    printf("\nExecution order of processes:\n");
+    for (int i = 0; i < orderIndex; i++) {
         printf("P%d ", executionOrder[i]);
     }
     printf("\n");
 
-    return 0;
+    
+    
 }
+    
+    
+    
+    
+    

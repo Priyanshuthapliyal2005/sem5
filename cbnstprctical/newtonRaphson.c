@@ -3,12 +3,12 @@
 
 // Define the function f(x)
 double f(double x) {
-    return 3*x - cos(x) - 1;  // Example function f(x) = 3x - cos(x) - 1
+    return x*x+4*sin(x);  // Example function f(x) = 3x - cos(x) - 1
 }
 
 // Define the derivative f'(x)
 double f_prime(double x) {
-    return 3 + sin(x);  // Derivative of f(x)
+    return 2*x + 4*cos(x);  // Derivative of f(x)
 }
 
 int main() {

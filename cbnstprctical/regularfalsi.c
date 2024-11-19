@@ -3,7 +3,8 @@
 
 // Define the function f(x)
 double f(double x) {
-    return x*x*x - 5*x + 1; // Example: f(x) = x^3 - 5x + 1
+    // return x*x*x - 5*x + 1; // Example: f(x) = x^3 - 5x + 1
+    return x*x - log2(x) -12;
 }
 
 // Main function

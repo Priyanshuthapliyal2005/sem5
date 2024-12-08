@@ -1,0 +1,1 @@
+printf("%.5lf\t%.5lf\n", x, y);

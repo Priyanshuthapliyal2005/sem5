@@ -1,39 +1,41 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-float eq(float x) {
+float f(float x) {
     return 1 / (1 + x * x);
 }
-int main() {
-    int n, i;
-    float upper, lower, h, sum = 0.0, x;
 
-    printf("Enter the number of intervals: ");
+int main() {
+    int n;
+    printf("Enter the number of intervals (must be a multiple of 3): ");
     scanf("%d", &n);
-    if (n % 2 != 0) {
-        printf("Simpson's 1/3 rule cannot be applied. Number of intervals must be even.\n");
+
+    if (n % 3 != 0) {
+        printf("Simpson's 3/8 rule cannot be applied. Number of intervals must be a multiple of 3.\n");
         return -1;
     }
 
-    printf("Enter the upper limit: ");
-    scanf("%f", &upper);
+    float a, b;
     printf("Enter the lower limit: ");
-    scanf("%f", &lower);
+    scanf("%f", &a);
 
-    h = (upper - lower) / n;
+    printf("Enter the upper limit: ");
+    scanf("%f", &b);
 
-    sum += eq(lower) + eq(upper); 
+    float sum = 0;
+    sum += f(a) + f(b);
+    float h = (b - a) / n;
 
-    for (i = 1; i < n; i++) {
-        x = lower + i * h;
+    for (int i = 1; i <= n - 1; i++) {
         if (i % 3 == 0) {
-            sum += 2 * eq(x); 
+            sum += 2 * f(a + i * h);
         } else {
-            sum += 3 * eq(x); 
+            sum += 3 * f(a + i * h);
         }
     }
 
-    sum *= h * 3/ 8;
+    sum *= 3 * h / 8;
 
     printf("The approximate value is: %f\n", sum);
 

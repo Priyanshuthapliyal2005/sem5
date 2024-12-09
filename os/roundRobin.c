@@ -1,65 +1,137 @@
 #include <stdio.h>
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
-void findWaitingTime(int processes[], int n, int bt[], int wt[], int quantum, int at[]) {
-    int rem_bt[n];
+struct Process
+{
+    int pid, at, bt, ct, st, rt, wt, tat;
+    int remBt;
+};
+
+typedef struct Process process;
+
+int main()
+{
+    int n, tq;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    printf("Enter the time quantum: ");
+    scanf("%d", &tq);
+
+    process p[n];
+
     for (int i = 0; i < n; i++)
-        rem_bt[i] = bt[i];
-    int t = 0;
+    {
+        p[i].pid = i + 1;
+        printf("Enter the arrival time and burst time of process %d: ", i + 1);
+        scanf("%d %d", &p[i].at, &p[i].bt);
+        p[i].remBt = p[i].bt; // Initialize remaining burst time
+    }
 
-    while (1) {
-        int done = 1;
-        for (int i = 0; i < n; i++) {
-            if (rem_bt[i] > 0 && at[i] <= t) {
-                done = 0;
-                if (rem_bt[i] > quantum) {
-                    t += quantum;
-                    rem_bt[i] -= quantum;
-                } else {
-                    t += rem_bt[i];
-                    wt[i] = t - bt[i] - at[i];
-                    rem_bt[i] = 0;
+    int currTime = 0;
+    int completed = 0;
+    int queue[n];
+    int front = 0, rear = 0;
+    int isInQueue[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        isInQueue[i] = 0;
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        if (p[i].at == currTime)
+        {
+            queue[rear++] = i;
+            isInQueue[i] = 1;
+        }
+    }
+
+    while (completed != n)
+    {
+        if (front == rear)
+        {
+            currTime++;
+            for (int i = 0; i < n; i++)
+            {
+                if (p[i].at == currTime && isInQueue[i] == 0)
+                {
+                    queue[rear++] = i;
+                    isInQueue[i] = 1;
                 }
             }
+            continue;
         }
-        if (done == 1)
-            break;
-        t++;
-    }
-}
 
-void findTurnAroundTime(int processes[], int n, int bt[], int wt[], int tat[]) {
+        int idx = queue[front++];
+
+        if (p[idx].remBt == p[idx].bt)
+        {
+            p[idx].st = currTime;
+            p[idx].rt = p[idx].st - p[idx].at;
+        }
+
+        if (p[idx].remBt <= tq)
+        {
+            currTime += p[idx].remBt;
+            p[idx].remBt = 0;
+            p[idx].ct = currTime;
+            completed++;
+        }
+        else
+        {
+            currTime += tq;
+            p[idx].remBt -= tq;
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            if (p[i].at <= currTime && isInQueue[i] == 0)
+            {
+                queue[rear++] = i;
+                isInQueue[i] = 1;
+            }
+        }
+
+        if (p[idx].remBt > 0)
+        {
+            queue[rear++] = idx;
+        }
+    }
+
+    int sumrt = 0, sumtat = 0, sumwt = 0;
+    float avgrt, avgtat, avgwt;
+
     for (int i = 0; i < n; i++)
-        tat[i] = bt[i] + wt[i];
-}
+    {
+        p[i].tat = p[i].ct - p[i].at;
+        sumtat += p[i].tat;
 
-void findAvgTime(int processes[], int n, int bt[], int quantum, int at[]) {
-    int wt[n], tat[n], total_wt = 0, total_tat = 0;
+        p[i].wt = p[i].tat - p[i].bt;
+        sumwt += p[i].wt;
 
-    findWaitingTime(processes, n, bt, wt, quantum, at);
-    findTurnAroundTime(processes, n, bt, wt, tat);
-
-    printf("Processes   Burst time   Arrival time   Waiting time   Turn around time\n");
-    for (int i = 0; i < n; i++) {
-        total_wt += wt[i];
-        total_tat += tat[i];
-        printf(" %d ", (i + 1));
-        printf("       %d\t ", bt[i]);
-        printf("       %d\t", at[i]);
-        printf("       %d\t", wt[i]);
-        printf("       %d\n", tat[i]);
+        sumrt += p[i].rt;
     }
 
-    printf("Average waiting time = %.2f\n", (float)total_wt / (float)n);
-    printf("Average turn around time = %.2f\n", (float)total_tat / (float)n);
-}
+    // Print results
+    printf("\nPID\tAT\tBT\tST\tCT\tTAT\tWT\tRT\n");
+    for (int i = 0; i < n; i++)
+    {
+        printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+               p[i].pid, p[i].at, p[i].bt, p[i].st, p[i].ct,
+               p[i].tat, p[i].wt, p[i].rt);
+    }
 
-int main() {
-    int processes[] = {1, 2, 3};
-    int n = sizeof processes / sizeof processes[0];
-    int burst_time[] = {10, 5, 8};
-    int arrival_time[] = {0, 1, 2};
-    int quantum = 5;
+    avgtat = (float)sumtat / n;
+    avgwt = (float)sumwt / n;
+    avgrt = (float)sumrt / n;
 
-    findAvgTime(processes, n, burst_time, quantum, arrival_time);
+    printf("\nAverage Turnaround Time: %.2f", avgtat);
+    printf("\nAverage Waiting Time: %.2f", avgwt);
+    printf("\nAverage Response Time: %.2f", avgrt);
+
     return 0;
 }

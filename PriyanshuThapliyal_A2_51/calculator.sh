@@ -1,43 +1,49 @@
 #!/bin/bash
-ch=0
-while [ $ch -ne 4 ]; do
-    echo "1) Add"
-    echo "2) Multiply"
-    echo "3) Divide"
-    echo "4) Exit"
-    echo "Enter your choice:"
-    read ch
-    case $ch in
+
+calculator(){
+    local a=$1
+    local b=$2
+    echo "Enter the operation you want to perform:"
+    echo "1. Addition"
+    echo "2. Subtraction"
+    echo "3. Multiplication"
+    echo "4. Division"
+    read choice 
+
+    case $choice in 
         1)
-            echo "Enter two numbers:"
-            read a
-            read b
-            c=$((a + b))
-            echo "Addition is $c"
-            ;;
+        result=$(($a +$b))
+        echo "The sum of $a and $b is $result"
+        ;;
+
         2)
-            echo "Enter two numbers:"
-            read a
-            read b
-            c=$((a * b))
-            echo "Multiplication is $c"
-            ;;
-        3)
-            echo "Enter two numbers:"
-            read a
-            read b
-            if [ $b -ne 0 ]; then
-                c=$((a / b))
-                echo "Division is $c"
-            else
-                echo "Division by zero is not allowed"
-            fi
-            ;;
+        result=$((a - b)) 
+        echo "The difference of $a and $b is $result"
+        ;;
+
+        3) 
+        result=$(($a * $b))
+        echo "The product of $a and $b is $result"
+        ;;
+
         4)
-            echo "Exiting..."
-            ;;
+        result=$(($a / $b))
+        echo "The division of $a and $b is $result"
+        ;;
+
         *)
-            echo "Invalid choice"
-            ;;
+        echo "Invalid choice"
+        ;;
+
     esac
+}
+echo "Enter the number of iterations: "
+read i 
+
+echo "Enter the 2 numbers : "
+read a
+read b
+
+for((j=0 ; j < i ; j++));do
+    calculator $a $b
 done

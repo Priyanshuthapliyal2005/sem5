@@ -1,54 +1,77 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
 
-int main(){
-    float x, y , h, u ;
-    int n ;
-    printf("Enter the number of data points: ");
+int main() {
+    int n;
+    float x;
+
+    // Input the number of terms
+    printf("Enter the number of terms: ");
     scanf("%d", &n);
 
-    float a[n][n+1];
+    // Declare a 2D array for the difference table
+    float a[n][n + 1]; // n rows, n+1 columns
 
-    printf("Enter the values of x:\n");
-    for(int i=0 ; i < n ; i++){
-        scanf("%f", &a[i][0]);
-    }
-    printf("Enter the values of y:\n");
-    for(int i=0 ; i < n ; i++){
-        scanf("%f", &a[i][1]);
+    // Input values for x
+    printf("Enter the values of x: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%f", &a[i][0]); // Store x values in the first column
     }
 
+    // Input values for y
+    printf("Enter the values of y: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%f", &a[i][1]); // Store y values in the second column
+    }
 
-    // diff table 
-    for(int j= 2 ; j<= n ; j++){
-        for(int i =0 ; i < n-j+1 ; i++){
-            a[i][j] = a[i+1][j-1] - a[i][j-1];
+    // Input the value of x for which we need to calculate y
+    printf("Enter the value of x for which you want to calculate y: ");
+    scanf("%f", &x);
+
+    // Create the difference table
+    for (int j = 2; j <= n; j++) { // Start from the third column
+        for (int i = 0; i <= n - j; i++) {
+            a[i][j] = a[i + 1][j - 1] - a[i][j - 1];
         }
     }
 
-    //displaying the table
-    for(int i=0 ; i < n ; i++){
-        for(int j=0 ; j < n-i+1 ; j++){
-            printf("%f\t", a[i][j]);
+    // Display the difference table
+    printf("\nThe Difference Table is as follows:\n");
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j <= n - i; j++) {
+            printf("%10.5f ", a[i][j]);
         }
         printf("\n");
     }
 
+    // Compute h (step size) and u
+    float h = a[1][0] - a[0][0]; // x1 - x0
+    int mid = n / 2;             // Middle row for central difference
+    float u = (x - a[mid][0]) / h;
 
-    //step size 
-    h= a[1][0] - a[0][0];
-    u =(x-a[0][0])/h;
+    // Initialize y with the first y value at the middle
+    float sum = a[mid][1];
 
-    y = a[0][1];
-    
-    float u1 = u;
-    float fact = 1;
-    for(int i=2 ; i<=n ; i++){
-        y +=(u1 * a[0][i]) /fact;
-        fact *= i;
-        u1 *= (u-(i-1));
+    // Apply Gauss's forward central difference formula
+    float u_product = 1; // To store consecutive terms of u
+    float fact = 1;      // To calculate factorial iteratively
+
+    for (int j = 2, k = 1; j <= n; j++, k++) {
+        // Update u_product for central differences
+        if (k % 2 == 1) {
+            u_product *= (u - (k / 2));
+        } else {
+            u_product *= (u + (k / 2 - 1));
+        }
+
+        // Update factorial
+        fact *= k;
+
+        // Add or subtract terms alternately
+        sum += (u_product * a[mid - (k / 2)][j]) / fact;
     }
-    printf("\nValue of y at x = %.5f is %.5f\n", x, y);
-    return 0;
 
+    // Display the result
+    printf("\nValue of y at x = %.5f is %.5f\n", x, sum);
+
+    return 0;
 }

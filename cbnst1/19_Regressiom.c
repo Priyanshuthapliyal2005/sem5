@@ -18,7 +18,7 @@ int main()
     }
     d = n * sumxsq - sumx * sumx;
     m = (n * sumxy - sumx * sumy) / d;
-    c = (sumy * sumxsq - sumx * sumxy) / d;
+    c = (sumy  - m * sumx) / n;
     printf("The regression line is: y = %.2fx + %.2f\n", m, c);
     return 0;
 }

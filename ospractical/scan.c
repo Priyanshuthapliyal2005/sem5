@@ -35,7 +35,7 @@
 int compare ( const void *a , const void *b){
     return (*(int*)a - *(int*)b);
 }
-9
+
 
 int main(){
     int  n , head;

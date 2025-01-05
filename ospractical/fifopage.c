@@ -178,7 +178,7 @@ int main(){
                 update(pt , frame[currFrame],-1 ,0 );
                 frame[currFrame] = currPage;
                 printFrameContents(frame , numFrames);
-                update(pt,currPage, currFrame ,-1);
+                update(pt,currPage, currFrame ,1);
                 currFrame = (currFrame+1) % numFrames;
             }
             pageFault++;
